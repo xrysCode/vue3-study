@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <h1>{{ test }}</h1>
-
+    <slot>默认插槽值</slot>
   </div>
 </template>
 
