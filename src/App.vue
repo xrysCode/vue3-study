@@ -8,7 +8,6 @@
     <router-link to="/users/zs">users</router-link>
 
   </div>
-  <button @click="addEvent">加事件</button>
   <router-view />
 
   <blog-post>
@@ -80,18 +79,7 @@ export default {
     return 'Hello world!'
   },
   methods: {
-    addEvent () {
-      debugger
-      document.body.addEventListener('click', e => {
-        console.log('---', e, document.getSelection())
-        debugger
-        // e.target 是你当前点击的元素
-        // e.currentTarget 是你绑定事件的元素
-        console.log('e.target=', e.target, 'e.currentTarget', e.currentTarget)
-        const v = e.target.__vnode
-        // shapeFlag
-        e.target.__vueParentComponent
-      }, true)
+    
     }
   }
   // setup (props, context) {
