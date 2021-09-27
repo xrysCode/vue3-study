@@ -79,9 +79,9 @@ export default {
     return 'Hello world!'
   },
   methods: {
-    
-    }
+
   }
+
   // setup (props, context) {
   //   // Attribute (非响应式对象)
   //   console.log(context.attrs)

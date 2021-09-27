@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-unused-expressions */
 
 // 组件解析
@@ -63,18 +64,33 @@ function resolveRouterMap (routerConfigArr) {
 export default {
   install: (app, options) => {
     const callCollectInfo = {
-      created () {
-        // this.$.appContext.app===app ->true
-        // this.$.type===app._component ->true
-        // this.$route 当前路由
-        // this.$route===app.config.globalProperties.$route ->true
-        // this.$router===app.config.globalProperties.$router ->true
-        console.log('插件 mixin 对象的钩子被调用')
-        const rootTree = fillTree(app, this.$route)
-        const routeMap = resolveRouterMap(app.config.globalProperties.$router.getRoutes())
-        // window.sessionStorage.setItem('components', JSON.stringify(rootNode))
-        console.log(routeMap, rootTree)
+      // created () {
+      //   // this.$.appContext.app===app ->true
+      //   // this.$.type===app._component ->true
+      //   // this.$route 当前路由
+      //   // this.$route===app.config.globalProperties.$route ->true
+      //   // this.$router===app.config.globalProperties.$router ->true
+      //   console.log('插件 mixin 对象的钩子被调用')
+      //   const rootTree = fillTree(app, this.$route)
+      //   const routeMap = resolveRouterMap(app.config.globalProperties.$router.getRoutes())
+      //   // window.sessionStorage.setItem('components', JSON.stringify(rootNode))
+      //   console.log(routeMap, rootTree)
+      // }
+
+      mounted () {
+        document.body.addEventListener('click', e => {
+          console.log('---', e, document.getSelection())
+          debugger
+          // e.target 是你当前点击的元素
+          // e.currentTarget 是你绑定事件的元素
+          console.log('e.target=', e.target, 'e.currentTarget', e.currentTarget)
+          // const v = e.target.__vnode
+          // shapeFlag
+          // e.target.__vueParentComponent
+          // console.log('---', e, document.getSelection())
+        }, false)
       }
+
     }
     const rootComponet = app._component
     if (rootComponet.mixins) {
