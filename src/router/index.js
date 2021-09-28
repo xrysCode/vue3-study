@@ -3,13 +3,14 @@ import Home from '../views/Home.vue'
 import MyConmp from '../components/MyConmp.vue'
 import User from '../views/User.vue'
 import About from '../views/About.vue'
-import app from '../App.vue'
+import TableTest from '../components/TableTest.vue'
+import MenuTest from '../components/MenuTest.vue'
 
 const routes = [
   {
     path: '/',
     name: 'AppHome',
-    component: app
+    component: Home
   },
   {
     path: '/about',
@@ -43,6 +44,17 @@ const routes = [
       }
     ]
   },
+  {
+    name: 'tablePath',
+    path: '/tableTest',
+    component: TableTest
+  },
+  {
+    name: 'menuTest',
+    path: '/menuTest',
+    component: MenuTest
+  },
+
   {
     path: '/index',
     components: {
