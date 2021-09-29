@@ -6,7 +6,7 @@ import store from './store'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 
-import authPlugin from './plugins/auth'
+import authPlugin from './plugins/auth2'
 const i18nStrings = {
   greetings: {
     hi: 'Hallo!'
