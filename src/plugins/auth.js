@@ -33,7 +33,7 @@ function parseComponentTree (_vChildren, parentNode) {
       if (vSubTree.children) {
         parseComponentTree(_vComponent.subTree.children, componentNode)
       }
-      if (vSubTree.ref) { // 有引用子组件 如果是路由的RouterView 那么_vComponent.subTree.ref.r._value.$==_vComponent.subTree.component==>true
+      if (vSubTree.component) { // 有引用子组件 如果是路由的RouterView 那么_vComponent.subTree.ref.r._value.$==_vComponent.subTree.component==>true
         const vSubComponent = vSubTree.component
         const subComponentNode = ComponentNode(vSubComponent, vSubTree.shapeFlag, componentNode)
         console.info('寻找到关联子树 父组件=', _vComponent, '子组件', vSubTree.component)
@@ -53,9 +53,21 @@ const routerLinkMap = new Map()// k 路径，对应自己的to连接， v 自己
 const routerViewMap = new Map()// k 当前路径，v RouterView的整个子项
 let rootComponentNode
 let vRouter
+// function ComponentNode() {
+//   this.name,
+//   this.filePath,
+//   this.shapeFlag,
+//   this.to,
+//   this.isRouter,
+//   this.childNodes= [],
+//   get fullName(){
+//     return this.name+this.filePath
+//   }
+// }
+
 function ComponentNode (_vComponent, shapeFlag, parentNode) {
   // const componentNode = Object.create({ childNodes: [],parentNode })
-  const componentNode = { childNodes: [], parentNode }
+  const componentNode = { childNodes: []/*, parentNode */ }
   if (parentNode != null) {
     parentNode.childNodes.push(componentNode)
   }
@@ -156,7 +168,7 @@ export default {
           console.log('e.target=', e.target, 'e.currentTarget', e.currentTarget)
           const recentlyComponent = e.target.__vueParentComponent// 最近的一个组件
           const rootComponet = recentlyComponent.root
-          if (!rootComponentNode) { // 初始化整个树
+          /** if (!rootComponentNode) { // 初始化整个树
             vRouter = recentlyComponent.appContext.config.globalProperties.$router
             rootComponentNode = ComponentNode(rootComponet, -1, null)
             parseComponentTree(rootComponet.subTree.children, rootComponentNode)
@@ -172,13 +184,26 @@ export default {
           // 比较查看是否是和根树相同，如果相同就结束
           if (fragmentUpComponet === rootComponet) {
             return
-          }
+          } */
+          vRouter = recentlyComponent.appContext.config.globalProperties.$router
+          rootComponentNode = ComponentNode(rootComponet, -1, null)
+          parseComponentTree(rootComponet.subTree.children, rootComponentNode)
 
           console.log('组件树', rootComponentNode)
-
+          // JSON.stringify(rootComponentNode)
+          window.sessionStorage.setItem('cTree', JSON.stringify(rootComponentNode))
+          // rootComponet.appContext.config.globalProperties.rootComponentNode = rootComponentNode
+          // rootComponet.appContext.mixins
           // e.target.__vueParentComponent
           // console.log('---', e, document.getSelection())
         }, false)
+
+        //  const message = ref('Hello!')
+        //     const changeMessage = async newMessage => {
+        //       message.value = newMessage
+        //       await nextTick()
+        //       console.log('Now DOM is updated')
+        //     }
       }
 
     }
@@ -190,12 +215,16 @@ export default {
       rootComponet.mixins.push(callCollectInfo)
     }
 
-    // const message = ref('Hello!')
-    // const changeMessage = async newMessage => {
-    //   message.value = newMessage
-    //   await nextTick()
-    //   console.log('Now DOM is updated')
-    // }
+    // 注入全局混入代理
+    // app.mixin({
+    //   created () {
+    //     // this.
+    //     const myOption = this.$options.myOption
+    //     if (myOption) {
+    //       console.log(myOption)
+    //     }
+    //   }
+    // })
   }
 
 }
