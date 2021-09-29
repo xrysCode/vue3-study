@@ -1,0 +1,24 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Chrome",
+            "request": "launch",
+            "type": "pwa-chrome",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}",
+            "serverReadyAction": {
+                "pattern": "listening on port ([0-9]+)",
+                "uriFormat": "http://localhost:%s",
+                "action": "openExternally"
+            },
+            "runtimeArgs": ["--disable-web-security",
+                // "--unsafely-treat-insecure-origin-as-secure=https://admin-dev.winnermedical.com,http://oauth-dev.winnermedical.com,https://admin-test.winnermedical.com",	//将给定（不安全）的起源视为安全起源。可以提供多个来源。除非还提供了--user-data-dir，否则无效。示例:-unsafely-treat-insecure-origin-as-secure=http://a.test,http://b.test--user-data-dir=/test/only/profile/ dir
+                // "--user-data-dir=D:\\program files\\myGoogle"
+            ]
+        }
+    ]
+}
