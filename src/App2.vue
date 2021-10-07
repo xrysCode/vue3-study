@@ -1,19 +1,7 @@
 <template>
   <h1>vue 测试$0__vue{{dataTest}}</h1>
-  <my-conmp v-if="false">修改插槽值v-if</my-conmp>
-   <my-conmp>修改插槽值</my-conmp>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link> |
-    <router-link to="/users/zs">users</router-link> |
-    <router-link to="/tableTest">tableTest</router-link> |
-    <router-link to="/menuTest">menuTest</router-link> |
-    <router-link to="/iframe">嵌套</router-link> |
-    <router-link to="/iframeTree">嵌套iframeTree</router-link>
-  </div>
-  <router-view />
-  <!-- <table-test/> -->
-  <blog-post>
+  <table-test/>
+  <!-- <blog-post>
     <template v-slot:header>
       <h1>About Me</h1>
     </template>
@@ -22,27 +10,28 @@
       <p>
         Here's some page content, which will be included in $slots.default.
       </p>
+      <el-button type="text" size="small">Edit</el-button>
     </template>
 
     <template v-slot:footer>
       <p>Copyright 2020 Evan You</p>
     </template>
-  </blog-post>
+  </blog-post>-->
 
 </template>
 <script>
-import MyConmp from './components/MyConmp.vue'
-// import TableTest from './components/TableTest.vue'
-import BlogPost from './views/BlogPost.vue'
+// import MyConmp from './components/MyConmp.vue'
+import TableTest from './components/TableTest.vue'
+// import BlogPost from './views/BlogPost.vue'
 // import TreeCompent from './components/TreeCompent.vue'
 
 export default {
   name: 'RootApp',
   authority: false,
   components: {
-    MyConmp,
-    BlogPost//,
-    // TableTest//,
+    // MyConmp,
+    // BlogPost//,
+    TableTest//,
     // AppLink
     // TreeCompent
   },

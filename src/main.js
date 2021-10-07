@@ -2,11 +2,14 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import axios from '@/axios/axios'
+import VueAxios from 'vue-axios'
 
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 
 import authPlugin from './plugins/auth2'
+
 const i18nStrings = {
   greetings: {
     hi: 'Hallo!'
@@ -14,8 +17,10 @@ const i18nStrings = {
 }
 
 var app = createApp(App).use(store)// .use(router)
-  .use(ElementPlus).use(authPlugin, i18nStrings)
+  .use(ElementPlus)
+  .use(authPlugin, i18nStrings)
   .use(router)
+  .use(VueAxios, axios)
 
 var vm = app.mount('#app')
 console.log(app, vm)

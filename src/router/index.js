@@ -5,12 +5,24 @@ import User from '../views/User.vue'
 import About from '../views/About.vue'
 import TableTest from '../components/TableTest.vue'
 import MenuTest from '../components/MenuTest.vue'
+import IframeTest from '../components/IframeTest2.vue'
+import TreeCompent from '@/components/TreeCompent.vue'
 
 const routes = [
   {
     path: '/',
     name: 'AppHome',
     component: Home
+  },
+  {
+    path: '/iframe',
+    name: 'Ifream',
+    component: IframeTest
+  },
+  {
+    path: '/iframeTree',
+    name: 'iframeTree',
+    component: TreeCompent
   },
   {
     path: '/about',

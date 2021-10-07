@@ -6,6 +6,7 @@
 // </template>  这个优先级高于render（）
 import { h } from 'vue'
 export default {
+  name: 'BlogPost',
   auth: true,
   render () {
     if (this.$.type.auth) {
