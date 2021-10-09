@@ -29,6 +29,9 @@ class DefaultOptions {
  * @returns componentNode
  */
 function parseComponentTree (vNode, parentNode) {
+  if (vNode == null) {
+    return
+  }
   if (vNode.shapeFlag & 6) { // 组件节点 寻找component 不去找children
     const vComponent = vNode.component// 虚拟节点的组件实例
     const componentNode = new ComponentNode(vComponent, parentNode)
@@ -59,7 +62,7 @@ class ComponentNode {
     const vType = _vComponent.type
     const vNode = _vComponent.vnode
     this.uid = _vComponent.uid
-    this.name = vType.name != null ? vType.name : vType.__file.substring(vType.__file.lastIndexOf('/') + 1).replaceAll('.', '_')// 组件名
+    this.name = vType.name != null ? vType.name : vType.__file.substring(vType.__file.lastIndexOf('/') + 1)// 组件名
     this.filePath = vType.__file// 组键路径
     this.shapeFlag = vNode.shapeFlag// 组键标记
     // this.isRouter = this.name === 'RouterLink' || this.name === 'RouterView'
@@ -72,8 +75,15 @@ class ComponentNode {
     }
     this.parentNode = parentNode
 
-    this.props = _vComponent.props
+    this.props = JSON.parse(JSON.stringify(_vComponent.props, (key, value) => { // 提前验证能转json的
+      if (key === 'context') { // 循环引用的临时方法
+        return value.type ? value.type.name : value
+      }
+      return value
+    }))
     this._vnode = vNode
+    // 这里要结合路由 将RouterLink 变成RouterView 以便
+
     // 唯一标记将名字相同的视为同一个功能点
     this.uniqueFlag = parentNode ? (parentNode.uniqueFlag + ':' + this.name + '[' + this.sequence + ']') : (this.name + '[' + this.sequence + ']')
     // 访问路径，顶层就是一个数组为[0]
@@ -100,6 +110,7 @@ export class MessageNotify {
   constructor (massageType, data, currentRoute) {
     this.massageType = massageType
     this.dataJson = data ? JSON.stringify(data) : data
+    // this.dataJson = data ? data.toJSON() : data
     this.currentRouteJson = currentRoute ? JSON.stringify(currentRoute.value) : currentRoute
   }
 }
@@ -174,6 +185,79 @@ class EachOtherNotify {
   }
 }
 
+function findMySelfSequence (vSubTreeVNode, mySelfComponent, selfPosition) {
+  // const vSubTreeVNode = parentComponent.subTree
+  if (vSubTreeVNode.shapeFlag & 6) { // 只有一个组件就是自己
+    if (vSubTreeVNode.component !== mySelfComponent) { // vSubTreeVNode.el==null
+      // ++lastIndex
+      selfPosition.sequence++
+    } else {
+      return selfPosition
+    }
+  }
+  if (vSubTreeVNode.shapeFlag & (16)) { // 数组节点
+    const vNodes = vSubTreeVNode.children
+    for (let i = 0; i < vNodes.length; i++) {
+      const sequence = findMySelfSequence(vNodes[i], mySelfComponent, selfPosition)
+      if (sequence !== undefined) { // 服了，0的时候直接给undefined
+        return sequence
+      }
+    }
+  }
+}
+
+class SelfPosition {
+  constructor (selfType) {
+    this.sequence = 0
+    this.componentName = selfType.name != null ? selfType.name : selfType.__file.substring(selfType.__file.lastIndexOf('/') + 1)// 组件名
+    this.uniqueFlag = null
+    this.accessPath = null
+  }
+
+  setUniqueFlag (parent) {
+    parent = parent ? parent.selfPosition ? parent : parent.$.ctx : parent// ctx 不是this的情况？why
+    this.uniqueFlag = parent ? (parent.selfPosition.uniqueFlag + ':' + this.componentName + '[' + this.sequence + ']') : (this.componentName + '[' + this.sequence + ']')
+    this.accessPath = parent ? (parent.selfPosition.accessPath + '.' + 'childNodes[' + this.sequence + ']') : ('[' + this.sequence + ']')
+  }
+}
+
+/**
+ * 根据配置树，及当前路由信息，动态生成运行时匹配的树
+ */
+class DynamicPraseTree {
+    routerLinkMap = new Map()// k 路径，对应自己的to连接， v 自己的解析节点 RouterLink
+    //  routerViewMap = new Map()// k 当前路径，v RouterView 的整个子项
+    routerViewArr = []
+    constructor (useTreeConfigs) {
+      this.useTreeConfigs = useTreeConfigs
+      this.prase(useTreeConfigs)
+    }
+
+    prase (treeNodes) { // 拆解路由
+      for (let i = 0; i < treeNodes.length; i++) {
+        const node = treeNodes[i]
+        if (node.name === 'RouterLink') {
+          this.routerLinkMap.set(node.props.to, node.childNodes)
+          continue
+        }
+        if (node.name === 'RouterView') {
+        // routerViewMap.set(node.props.to,node)
+        // 多个展示节点，需要记录为准来精确匹配，待做
+          this.routerViewArr.push(node)
+          continue
+        }
+        this.prase(node.childNodes)
+      }
+    }
+
+    getCurrentRouterTree (currentRoute) {
+      const childNodes = this.routerLinkMap.get(currentRoute.path)
+      for (let i = 0; i < this.routerViewArr.length; i++) {
+        this.routerViewArr[i].childNodes = childNodes
+      }
+      return this.useTreeConfigs
+    }
+}
 export default {
 
   install: (app, options) => {
@@ -186,39 +270,76 @@ export default {
     // 注入全局混入代理  这里对比是否需要拦截或者展示auth按钮配置
     // 默认开启
     app.mixin({
-    // beforeCreate () {
-    //   // debugger
-    //   console.log('beforeCreate', this)
-    // },
-      created () { // 在创建的时候给自己添加childNodes
-        // 从这里要得到访问的准确路劲
-        const useTreeConfig = JSON.parse(localStorage.getItem('useTreeConfig'))
-        const vc = this.$
-        const typeName = vc.type.name
-        // debugger
-        if (typeName === 'RouterLink') { // && vc.props.label === 'Operations'
-          debugger
-          console.log(typeName)
-          const target = vc.render
+      data () {
+        return {
+          dataRule: { a: 'a' }
+        }
+      },
+      beforeCreate () {
+      // debugger
+      // console.log('beforeCreate', this)
+        const parent = this.$parent
+        const mySelfComponent = this.$
+
+        // <transition> 元素作为单个元素/组件的过渡效果。<transition> 只会把过渡效果应用到其包裹的内容上，
+        // 而不会额外渲染 DOM 元素，也不会出现在可被检查的组件层级中。
+        // todo 动画组件的完善？？
+        // if (mySelfComponent.type.name.endsWith('Transition')) { // transition
+        //   console.log('内部组件', mySelfComponent)
+        //   return
+        // }
+        let useTreeConfig = this.useTreeConfig
+        if (!useTreeConfig) {
+          const use = JSON.parse(localStorage.getItem('useTreeConfig'))
+          if (!use) {
+            return
+          }
+          const dynamicPraseTree = new DynamicPraseTree(use)
+          // .config.globalProperties.$router.currentRoute.value
+          useTreeConfig = dynamicPraseTree.getCurrentRouterTree(this.$router.currentRoute.value)
+          this.useTreeConfig = useTreeConfig
+        }
+
+        let selfPosition = new SelfPosition(mySelfComponent.type)
+        if (parent !== null) { // 内部组件的特殊情况。这里特殊处理
+          selfPosition = findMySelfSequence(parent.$.subTree, mySelfComponent, selfPosition) ? selfPosition : selfPosition
+        }
+        selfPosition.setUniqueFlag(parent)
+        this.selfPosition = selfPosition
+
+        let needAuth = false
+        let needDataAuth = false
+        try {
+          // eslint-disable-next-line no-eval
+          const treeConfig = eval('useTreeConfig' + selfPosition.accessPath)
+          if (treeConfig.uniqueFlag === selfPosition.uniqueFlag) {
+            needAuth = treeConfig.needAuth
+            needDataAuth = treeConfig.needDataAuth
+            console.log('treeConfig', treeConfig)
+          } else {
+            // console.warn('运行时树与配置树不一致', selfPosition, useTreeConfig)
+          }
+        } catch (error) {
+          // console.warn('运行时树与配置树不一致', selfPosition, useTreeConfig, error)
+          needAuth = false
+        }// 从这里要得到访问的准确路
+
+        if (needAuth) { // 组件优先级最高 && vc.props.label === 'Operations' typeName === 'RouterLink'
+          const target = mySelfComponent.render
           const handler = {
-            noAuth: (ctx) => [
-              h('h1', {}, '隐身')
-            ],
             apply: function (target, ctx, args) {
-            // if (!ctx.isAuth) {
-              return Reflect.apply(target, ctx, args)
-            // } else {
-            // return this.noAuth(ctx)
-            // }
+              if (!needAuth) {
+                return Reflect.apply(target, ctx, args)
+              } else { // 组件不需要渲染，这时它可以返回 null。这样我们在 DOM 中会渲染一个注释节点。
+                return null
+              }
             }
           }
           const proxy = new Proxy(target, handler)
-          vc.render = proxy
+          mySelfComponent.render = proxy
           console.log(this, target)
-        }
-        // 直接在父级挂插槽 "ElTableColumn"
-        // if (typeName === 'BlogPost') {
-        if (typeName === 'ElTableColumn' && this.$props && this.$props.label === 'Operations') {
+        } else if (needDataAuth) { // 显示数据级弹框规则配置
+        // if (typeName === 'ElTableColumn' && this.$props && this.$props.label === 'Operations') {
           // debugger
           const slot = this.$.slots.default
           // <el-button type="text" size="small">Edit</el-button> AuthRule ElButton
@@ -234,9 +355,8 @@ export default {
           })
           this.$.slots.default = proxy
         }
-      // if()
-      //         =this.$slots.default()
       }
+
     })
   }
 
