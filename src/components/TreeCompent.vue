@@ -26,7 +26,6 @@
 
 // import authPlugin from './plugins/auth2'
 import { MessageNotify, START_COMPONENT_LISTENER } from '@/plugins/auth2'
-const id = 1000
 const routerLinkMap = new Map()// k 路径，对应自己的to连接， v 自己的解析节点
 const routerViewMap = new Map()// k 当前路径，v RouterView的整个子项
 /**
@@ -114,8 +113,8 @@ export default {
         // console.log('树忽略自己', window.location, 'data=', event.data, event)
         return
       }
-      debugger
       const newTrees = new Array(JSON.parse(event.data.dataJson))
+      // const newTrees = new Array(event.data.dataJson)
       const currentRoute = JSON.parse(event.data.currentRouteJson)
       console.log('树收到的信息', event, 'data=', event.data, 'origin=', event.origin, 'source=', event.source)
       const oldTrees = _this.componentTree
@@ -151,11 +150,11 @@ export default {
 
     openCloseAuth (data) {
       data.needAuth = !data.needAuth
-      this.data = [...this.data]
+      // this.componentTree = [...this.componentTree]
     },
     dataLevelAuth (data) {
       data.needDataAuth = !data.needDataAuth
-      this.data = [...this.data]
+      this.componentTree = [...this.componentTree]
     },
     saveTree () {
       window.localStorage.setItem('componentTreeConfig', JSON.stringify(this.componentTree))
@@ -170,7 +169,7 @@ export default {
       const children = parent.data.children || parent.data
       const index = children.findIndex((d) => d.id === data.id)
       children.splice(index, 1)
-      this.data = [...this.data]
+      this.componentTree = [...this.componentTree]
     },
 
     renderContent (h, { node, data, store }) {
@@ -178,9 +177,9 @@ export default {
       return h('span', { class: 'custom-tree-node' },
         h('span', null, node.label),
         h('span', null,
-          h('a', { onClick: () => this.openCloseAuth(data) }, data.needAuth ? '关闭权限' : '开启权限'),
+          h('a', { onClick: () => this.openCloseAuth(data) }, data.needAuth ? '隐藏' : '显示'),
           h('span', null, ' | '),
-          h('a', { onClick: () => this.dataLevelAuth(data) }, data.needDataAuth ? '关闭数据级权限' : '开启数据级权限')
+          h('a', { onClick: () => this.dataLevelAuth(data) }, data.needDataAuth ? '数据级隐藏' : '数据级显示')
         )
       )
     }
