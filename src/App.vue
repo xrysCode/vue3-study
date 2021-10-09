@@ -8,8 +8,7 @@
     <router-link to="/users/zs">users</router-link> |
     <router-link to="/tableTest">tableTest</router-link> |
     <router-link to="/menuTest">menuTest</router-link> |
-    <router-link to="/iframe">嵌套</router-link> |
-    <router-link to="/iframeTree">嵌套iframeTree</router-link>
+    <router-link to="/iframeTree">嵌套扫描组件Tree</router-link>
   </div>
   <router-view />
   <!-- <table-test/> -->
@@ -57,7 +56,12 @@ export default {
     console.log('app->created is: ', this) // => "count is: 1"
   },
   mounted () {
-    console.log('app->Component is mounted!', this)
+    debugger
+    const d = this.$http.post('/web/component-tree', {
+      params: this.$data,
+      data: { data: this.$data }
+    })//, { headers: { AuthData: 'AuthData' } }
+    console.log('app->Component is mounted!', this, d)
   },
   data () {
     return {
