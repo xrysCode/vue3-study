@@ -1,14 +1,14 @@
 <template>
 <!-- <div>???===={{rowData}}</div> -->
-  <el-button type="text" @click="dialogTableVisible = true">弹框配置数据规则</el-button>
-  <button @click="alert1">xxxx</button>
+  <el-button type="text" @click="dialogTableVisible = true,alert1">弹框配置数据规则</el-button>
+  <!-- <button @click="alert1">xxxx</button> -->
   <el-dialog v-model="dialogTableVisible" title="获取的数据">
     <!-- <p>行排序索引={{this.rowData[0].$index}}</p>
     <p>数据={{this.rowData[0].row}}</p>
     <p>数据标识={{this.rowData[0]._self.props.currentRowKey}}</p> -->
-    <p>数据标识={{this.currentRowKey}}</p>
-
-<el-table :data="rowData">
+    <p>数据标识符号={{this.currentRowKey}}</p>
+    <p>这里配置当前行的数据查看规则，依据用户身份可以默认身份可看</p>
+    <el-table :data="rowData">
       <el-table-column
         property="row.id"
         label="id"
